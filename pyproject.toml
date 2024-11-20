@@ -1,0 +1,20 @@
+[project]
+name = "compy"
+version = "0.1.0"
+description = "Automatic Python project initialization and management"
+dependencies = [ "toml", "GitPython",]
+[[project.authors]]
+name = "Ettore Ricci"
+
+[build-system]
+requires = [ "setuptools >= 61.0",]
+build-backend = "setuptools.build_meta"
+
+[project.license]
+file = "LICENSE"
+
+[project.scripts]
+compy = "compy.scripts:main"
+
+[tool.setuptools]
+packages = [ "compy",]
