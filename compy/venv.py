@@ -14,3 +14,13 @@ def install_project(venv_dir: str, project_path: str):
         ],
         check=True,
     )
+
+def install_dependencies(venv_dir: str, dependencies: list[str]):
+    subprocess.run(
+        [
+            f"{venv_dir}/bin/pip",
+            "install",
+            *dependencies,
+        ],
+        check=True,
+    )

@@ -1,5 +1,6 @@
+import os
 import toml
-
+import subprocess
 
 def generate_pyproject(project_name: str, author: str, version: str = "0.1.0", description: str = "A Python project") -> dict:
     return {

@@ -10,13 +10,13 @@ def log(msg: str, level: LogLevel = LogLevel.INFO):
     color = "\033[0m"
     match level:
         case LogLevel.DEBUG:
-            color = "\033[94m"
+            color = "\033[34m"
         case LogLevel.INFO:
-            color = "\033[92m"
+            color = "\033[32m"
         case LogLevel.WARNING:
-            color = "\033[93m"
+            color = "\033[33m"
         case LogLevel.ERROR:
-            color = "\033[91m"
+            color = "\033[31m"
     print(f"{color}{msg}\033[0m")
 
 def log_debug(msg: str):

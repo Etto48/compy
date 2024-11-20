@@ -1,11 +1,12 @@
 import argparse
 import os
+import subprocess
 from typing import Optional
 import toml
 
 from compy.git_tool import default_gitignore, init_repo
 from compy.pyproject import generate_pyproject, load_pyproject
-from compy.venv import create_venv, install_project
+from compy.venv import create_venv, install_dependencies, install_project
 from compy.licenses.mit import get_license
 from compy.logger import log_debug, log_info, log_warning, log_error
 from compy.touch import touch
@@ -80,15 +81,20 @@ def add_dependency(project_path: str, dependencies: list[str]):
         return
     log_info(f"Adding dependencies: {' '.join(dependencies)}")
     pyproject["project"]["dependencies"].extend(dependencies)
-
-    with open(pyproject_path, "w") as f:
-        toml.dump(pyproject, f)
     
     venv_path = os.path.join(project_path, ".venv")
     if not os.path.exists(venv_path):
         log_warning("Virtual environment not found, skipping installation")
     else:
-        install_project(venv_path, project_path)
+        try:
+            install_dependencies(venv_path, dependencies)
+        except subprocess.CalledProcessError:
+            log_error(f"Failed to install dependencies")
+            return
+
+    with open(pyproject_path, "w") as f:
+        toml.dump(pyproject, f)
+    
     log_info("Dependency added successfully")
     
 
