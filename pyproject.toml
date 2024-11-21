@@ -17,4 +17,4 @@ file = "LICENSE"
 compy = "compy.scripts:main"
 
 [tool.setuptools]
-packages = [ "compy",]
+packages = { find = { include = ["compy", "compy.*"] } }

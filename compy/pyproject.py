@@ -22,9 +22,11 @@ def generate_pyproject(project_name: str, author: str, version: str = "0.1.0", d
         },
         "tool": {
             "setuptools": {
-                "packages": [
-                    project_name,
-                ]
+                "packages": {
+                    "find": {
+                        "include": [project_name, f"{project_name}.*"],
+                    }
+                }
             }
         }
     }

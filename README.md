@@ -2,6 +2,14 @@
 
 Compy is a tool for initializing and managing Python projects.
 
+## Installation
+
+To install Compy, run the following command:
+
+```bash
+
+```
+
 ## Usage
 
 To initialize a new Python project, run the following command:
