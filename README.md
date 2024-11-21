@@ -6,8 +6,14 @@ Compy is a tool for initializing and managing Python projects.
 
 To install Compy, run the following command:
 
-```bash
+```sh
+sh -c "$(curl -sSL https://raw.githubusercontent.com/Etto48/compy/main/install.sh)"
+```
 
+To uninstall Compy, run the following command:
+
+```sh
+sh -c "$(curl -sSL https://raw.githubusercontent.com/Etto48/compy/main/install.sh)" -- --uninstall
 ```
 
 ## Usage
