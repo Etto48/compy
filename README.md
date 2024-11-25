@@ -33,3 +33,15 @@ compy add <package>
 ```
 
 This will add the specified package to the project in the current directory.
+
+## Configuration
+
+Compy can be configured by placing a file in `~/.config/compy/settings.toml`.
+
+The following settings are available:
+
+- `name`: The author name.
+- `email`: The author email.
+- `license`: The license to use. One of `MIT` or `GPL3`.
+- `version`: The project version.
+- `description`: The project description.

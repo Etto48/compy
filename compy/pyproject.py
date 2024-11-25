@@ -1,9 +1,10 @@
 import os
+from typing import Optional
 import toml
 import subprocess
 
-def generate_pyproject(project_name: str, author: str, version: str = "0.1.0", description: str = "A Python project") -> dict:
-    return {
+def generate_pyproject(project_name: str, author: str, email: Optional[str], version: str = "0.1.0", description: str = "A Python project") -> dict:
+    ret = {
         "project": {
             "name": project_name,
             "authors": [{
@@ -28,6 +29,9 @@ def generate_pyproject(project_name: str, author: str, version: str = "0.1.0", d
             }
         }
     }
+    if email:
+        ret["project"]["authors"][0]["email"] = email
+    return ret
 
 def load_pyproject(pyproject_path: str) -> dict:
     with open(pyproject_path, "r") as f:

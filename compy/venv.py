@@ -24,3 +24,14 @@ def install_dependencies(venv_dir: str, dependencies: list[str]):
         ],
         check=True,
     )
+
+def uninstall_dependencies(venv_dir: str, dependencies: list[str]):
+    subprocess.run(
+        [
+            f"{venv_dir}/bin/pip",
+            "uninstall",
+            "-y",
+            *dependencies,
+        ],
+        check=True,
+    )
