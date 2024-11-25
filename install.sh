@@ -1,7 +1,7 @@
 #!/bin/sh
 
 UNINSTALL=0
-EDITABLE=0
+INSTALL_MODE=git
 
 # Parse command line arguments
 for arg in "$@"; do
@@ -19,7 +19,11 @@ for arg in "$@"; do
         shift
         ;;
         -e | --editable)
-        EDITABLE=1
+        INSTALL_MODE=editable
+        shift
+        ;;
+        -l | --local)
+        INSTALL_MODE=local
         shift
         ;;
     esac
@@ -46,11 +50,17 @@ install() {
     python3 -m venv $INSTALL_DIR
 
     # Install the package
-    if [ $EDITABLE -eq 0 ]; then
-        $INSTALL_DIR/bin/pip install git+https://github.com/Etto48/compy
-    else
-        $INSTALL_DIR/bin/pip install -e .
-    fi
+    case $INSTALL_MODE in
+        git)
+            $INSTALL_DIR/bin/pip install git+https://github.com/Etto48/compy
+            ;;
+        local)
+            $INSTALL_DIR/bin/pip install .
+            ;;
+        editable)
+            $INSTALL_DIR/bin/pip install -e .
+            ;;
+    esac
 
     # Create a symbolic link to the executable
     mkdir -p $HOME/.local/bin
