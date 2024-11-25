@@ -18,3 +18,4 @@ compy = "compy.scripts:main"
 
 [tool.setuptools]
 package-dir = { "compy" = "compy" }
+package-data = { "compy" = ["compy/licenses"] }
