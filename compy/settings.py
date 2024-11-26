@@ -12,6 +12,7 @@ class Settings:
     version: str = "0.1.0"
     description: str = "A Python project"
     license: Literal["MIT", "GPL3"] = "MIT"
+    python_executable: str = "python3"
     
     @staticmethod
     def load(path: str):
@@ -22,7 +23,7 @@ class Settings:
     def autoload():
         paths = [
             "~/.config/compy/settings.toml",
-            "~/.compy/settings.toml",
+            "~/.config/compy.toml",
         ]
         for path in paths:
             try:

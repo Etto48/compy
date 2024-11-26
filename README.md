@@ -45,3 +45,4 @@ The following settings are available:
 - `license`: The license to use. One of `MIT` or `GPL3`.
 - `version`: The project version.
 - `description`: The project description.
+- `python_executable`: The Python executable to use. Defaults to `python3`.

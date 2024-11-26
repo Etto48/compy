@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json.schemastore.org/base.json",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string",
+            "format": "email"
+        },
+        "version": {
+            "type": "string",
+            "format": "semver"
+        },
+        "license": {
+            "type": "string",
+            "enum": ["MIT", "GPL"]
+        },
+        "python_executable": {
+            "type": "string",
+            "format": "file-path"
+        }
+    }
+}

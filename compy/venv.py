@@ -1,8 +1,15 @@
-import venv
 import subprocess
 
-def create_venv(venv_dir: str):
-    venv.create(venv_dir, with_pip=True)
+def create_venv(venv_dir: str, python_executable: str = "python3"):
+    subprocess.run(
+        [
+            python_executable,
+            "-m",
+            "venv",
+            venv_dir,
+        ],
+        check=True,
+    )
 
 def install_project(venv_dir: str, project_path: str):
     subprocess.run(
