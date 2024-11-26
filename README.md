@@ -36,7 +36,7 @@ This will add the specified package to the project in the current directory.
 
 ## Configuration
 
-Compy can be configured by placing a file in `~/.config/compy/settings.toml`.
+Compy can be configured by placing a file in `~/.config/compy/compy.toml` or `~/.config/compy.toml`.
 
 The following settings are available:
 
