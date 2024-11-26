@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 file = "LICENSE"
 
 [project.scripts]
-compy = "compy.scripts:main"
+compy = "compy.scripts.main:main"
 
 [tool.setuptools]
 package-dir = { "compy" = "compy" }

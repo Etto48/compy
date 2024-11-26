@@ -1,1 +1,0 @@
-from compy.scripts.main import main

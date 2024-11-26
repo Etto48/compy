@@ -26,13 +26,11 @@ compy init .
 
 This will create a new Python project in the current directory.
 
-To add a new dependency to the project, run the following command:
+For a list of available commands, run the following command:
 
 ```bash
-compy add <package>
+compy --help
 ```
-
-This will add the specified package to the project in the current directory.
 
 ## Configuration
 

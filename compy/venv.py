@@ -59,3 +59,13 @@ def get_package_distributions(venv_dir: str) -> dict[str, list[str]]:
     package_distributions = json.loads(result.stdout)
     return package_distributions
     
+def run_script(venv_dir: str, package: str, script: str, remainder_args: list[str]):
+    subprocess.run(
+        [
+            f"{venv_dir}/bin/python3",
+            "-m",
+            f"{package}.scripts.{script}",
+            *remainder_args,
+        ],
+        check=True,
+    )

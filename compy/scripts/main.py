@@ -239,6 +239,32 @@ def tidy_dependencies(project_path: str, yes: bool, no: bool):
 
     log_info("Dependencies tidied successfully")
 
+def run_script(project_path: str, script: str, remainder_args: list[str]):
+    project_path = os.path.abspath(project_path)
+    venv_path = os.path.join(project_path, ".venv")
+    pyproject_path = os.path.join(project_path, "pyproject.toml")
+    try:
+        pyproject = load_pyproject(pyproject_path)
+    except FileNotFoundError:
+        log_error("pyproject.toml not found")
+        return
+    current_packages = pyproject["tool"]["setuptools"]["package-dir"].keys()
+    for package_name in current_packages:
+        scripts_path = os.path.join(project_path, package_name, "scripts")
+        script_path = os.path.join(scripts_path, f"{script}.py")
+        if os.path.exists(script_path):
+            correct_package = package_name
+            break
+    else:
+        log_error(f"Script {script} not found")
+        return
+    
+    log_info(f"Running script: {script}")
+    try:
+        venv.run_script(venv_path, correct_package, script, remainder_args)
+    except subprocess.CalledProcessError:
+        log_error(f"Failed to run script")
+        return
 
 def main():
     settings = Settings.autoload()
@@ -257,6 +283,8 @@ def main():
         "remove", help="Remove a dependency from the project")
     tidy_parser = subparsers.add_parser(
         "tidy", help="Install missing dependencies and remove unused dependencies")
+    run_parser = subparsers.add_parser(
+        "run", help="Run a Python script")
 
     init_parser.add_argument(
         "project_path",
@@ -335,6 +363,22 @@ def main():
         "-n", "--no",
         help="Automatically deny the changes",
         action="store_true")
+    
+    run_parser.add_argument(
+        "script",
+        help="Name of the script to run",
+        type=str,
+        default="main",
+        nargs="?")
+    run_parser.add_argument(
+        "-p", "--project-path",
+        help="Path to the project directory",
+        type=str,
+        default=".")
+    run_parser.add_argument(
+        "remainder_args",
+        help="Arguments to pass to the script",
+        nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
@@ -350,3 +394,8 @@ def main():
             remove_dependency(args.project_path, args.dependencies)
         case "tidy":
             tidy_dependencies(args.project_path, args.yes, args.no)
+        case "run": 
+            run_script(args.project_path, args.script, args.remainder_args)
+
+if __name__ == "__main__":
+    main()
