@@ -142,6 +142,7 @@ def remove_dependency(project_path: str, dependencies: list[str]):
 
     log_info("Dependencies removed successfully")
 
+
 def tidy_dependencies(project_path: str, yes: bool, no: bool):
     match (yes, no):
         case (True, True):
@@ -153,7 +154,7 @@ def tidy_dependencies(project_path: str, yes: bool, no: bool):
             choice = True
         case (False, True):
             choice = False
-    
+
     project_path = os.path.abspath(project_path)
     pyproject_path = os.path.join(project_path, "pyproject.toml")
     try:
@@ -161,14 +162,14 @@ def tidy_dependencies(project_path: str, yes: bool, no: bool):
     except FileNotFoundError:
         log_error("pyproject.toml not found")
         return
-    
+
     this_packages = pyproject["tool"]["setuptools"]["package-dir"].keys()
 
     found_deps = set()
     for package_dir in pyproject["tool"]["setuptools"]["package-dir"].values():
         new_deps = find_dependencies(os.path.join(project_path, package_dir))
         found_deps.update(new_deps)
-    
+
     venv_path = os.path.join(project_path, ".venv")
 
     found_deps.difference_update(this_packages)
@@ -192,7 +193,7 @@ def tidy_dependencies(project_path: str, yes: bool, no: bool):
         log_info("No missing dependencies")
     else:
         log_warning(f"Missing dependencies: {" ".join(missing_deps)}")
-    
+
         if choice is None:
             if input("Do you want to install missing dependencies? [y/N] ").lower() != "y":
                 install_deps = False
@@ -202,20 +203,20 @@ def tidy_dependencies(project_path: str, yes: bool, no: bool):
             install_deps = True
         else:
             install_deps = False
-        
+
         if install_deps:
             install_dependencies(venv_path, missing_deps)
             log_info("Missing dependencies installed successfully")
         else:
             log_info("Skipping installation of missing dependencies")
-    
+
     unused_deps = explicit_deps.copy()
     for dep in explicit_deps:
         for module in reverse_package_distributions.get(dep, {dep}):
             if module in found_deps:
                 unused_deps.remove(dep)
                 break
-    
+
     if len(unused_deps) == 0:
         log_info("No unused dependencies")
     else:
@@ -258,40 +259,82 @@ def main():
         "tidy", help="Install missing dependencies and remove unused dependencies")
 
     init_parser.add_argument(
-        "project_path", help="Path to the project directory", type=str, default=".", nargs="?")
-    init_parser.add_argument("-p", "--project-name",
-                             help="Name of the project", type=str)
+        "project_path",
+        help="Path to the project directory",
+        type=str,
+        default=".",
+        nargs="?")
     init_parser.add_argument(
-        "-a", "--author", help="Author of the project", type=str, default=settings.name)
+        "-p", "--project-name",
+        help="Name of the project",
+        type=str)
     init_parser.add_argument(
-        "-e", "--email", help="Email of the author", type=str, default=settings.email)
-    init_parser.add_argument("-l", "--license", help="License of the project",
-                             type=str, default=settings.license, choices=["MIT", "GPL3"])
+        "-a", "--author",
+        help="Author of the project",
+        type=str,
+        default=settings.name)
     init_parser.add_argument(
-        "-v", "--version", help="Version of the project", type=str, default=settings.version)
+        "-e", "--email",
+        help="Email of the author",
+        type=str,
+        default=settings.email)
     init_parser.add_argument(
-        "-d", "--description", help="Description of the project", type=str, default=settings.description)
+        "-l", "--license",
+        help="License of the project",
+        type=str,
+        default=settings.license,
+        choices=["MIT", "GPL3"])
     init_parser.add_argument(
-        "-x", "--python-executable", help="Python executable to use", type=str, default=settings.python_executable)
+        "-v", "--version",
+        help="Version of the project",
+        type=str,
+        default=settings.version)
+    init_parser.add_argument(
+        "-d", "--description",
+        help="Description of the project",
+        type=str,
+        default=settings.description)
+    init_parser.add_argument(
+        "-x", "--python-executable",
+        help="Python executable to use",
+        type=str,
+        default=settings.python_executable)
 
     add_parser.add_argument(
-        "dependencies", help="Name of the dependency to add, also version requirements are allowed", type=str, nargs="+")
+        "dependencies",
+        help="Name of the dependency to add, also version requirements are allowed",
+        type=str,
+        nargs="+")
     add_parser.add_argument(
-        "-p", "--project-path", help="Path to the project directory", type=str, default=".")
+        "-p", "--project-path",
+        help="Path to the project directory",
+        type=str,
+        default=".")
 
     remove_parser.add_argument(
-        "dependencies", help="Name of the dependency to remove", type=str, nargs="+")
+        "dependencies",
+        help="Name of the dependency to remove",
+        type=str,
+        nargs="+")
     remove_parser.add_argument(
-        "-p", "--project-path", help="Path to the project directory", type=str, default=".")
-    
+        "-p", "--project-path",
+        help="Path to the project directory",
+        type=str,
+        default=".")
+
     tidy_parser.add_argument(
-        "-p", "--project-path", help="Path to the project directory", type=str, default=".")
+        "-p", "--project-path",
+        help="Path to the project directory",
+        type=str,
+        default=".")
     tidy_parser.add_argument(
-        "-y", "--yes", help="Automatically confirm the changes", action="store_true"
-    )
+        "-y", "--yes",
+        help="Automatically confirm the changes",
+        action="store_true")
     tidy_parser.add_argument(
-        "-n", "--no", help="Automatically deny the changes", action="store_true"
-    )
+        "-n", "--no",
+        help="Automatically deny the changes",
+        action="store_true")
 
     args = parser.parse_args()
 
