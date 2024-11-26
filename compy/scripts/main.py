@@ -5,10 +5,10 @@ from typing import Optional
 import toml
 
 from compy.git_tool import default_gitignore, init_repo
-from compy.pyproject import generate_pyproject, load_pyproject
+from compy.pyproject import find_dependencies, generate_pyproject, load_pyproject
 from compy.settings import Settings
 from compy import venv
-from compy.venv import create_venv, install_dependencies, install_project, uninstall_dependencies
+from compy.venv import create_venv, get_package_distributions, install_dependencies, install_project, uninstall_dependencies
 from compy.licenses import get_license
 from compy.logger import log_debug, log_info, log_warning, log_error
 from compy.touch import touch
@@ -142,6 +142,102 @@ def remove_dependency(project_path: str, dependencies: list[str]):
 
     log_info("Dependencies removed successfully")
 
+def tidy_dependencies(project_path: str, yes: bool, no: bool):
+    match (yes, no):
+        case (True, True):
+            log_error("Cannot use both --yes and --no")
+            return
+        case (False, False):
+            choice = None
+        case (True, False):
+            choice = True
+        case (False, True):
+            choice = False
+    
+    project_path = os.path.abspath(project_path)
+    pyproject_path = os.path.join(project_path, "pyproject.toml")
+    try:
+        pyproject = load_pyproject(pyproject_path)
+    except FileNotFoundError:
+        log_error("pyproject.toml not found")
+        return
+    
+    this_packages = pyproject["tool"]["setuptools"]["package-dir"].keys()
+
+    found_deps = set()
+    for package_dir in pyproject["tool"]["setuptools"]["package-dir"].values():
+        new_deps = find_dependencies(os.path.join(project_path, package_dir))
+        found_deps.update(new_deps)
+    
+    venv_path = os.path.join(project_path, ".venv")
+
+    found_deps.difference_update(this_packages)
+    package_distributions = get_package_distributions(venv_path)
+    reverse_package_distributions = {}
+    for package, distributions in package_distributions.items():
+        for distribution in distributions:
+            if distribution in reverse_package_distributions:
+                reverse_package_distributions[distribution].add(package)
+            else:
+                reverse_package_distributions[distribution] = {package}
+    explicit_deps = set(pyproject["project"]["dependencies"])
+    explicit_deps_modules = set()
+    for dep in explicit_deps:
+        for module in reverse_package_distributions.get(dep, {dep}):
+            explicit_deps_modules.add(module)
+    available_packages = set(package_distributions.keys())
+    log_info(f"Found dependencies: {" ".join(found_deps)}")
+    missing_deps = found_deps.difference(available_packages)
+    if len(missing_deps) == 0:
+        log_info("No missing dependencies")
+    else:
+        log_warning(f"Missing dependencies: {" ".join(missing_deps)}")
+    
+        if choice is None:
+            if input("Do you want to install missing dependencies? [y/N] ").lower() != "y":
+                install_deps = False
+            else:
+                install_deps = True
+        elif choice == True:
+            install_deps = True
+        else:
+            install_deps = False
+        
+        if install_deps:
+            install_dependencies(venv_path, missing_deps)
+            log_info("Missing dependencies installed successfully")
+        else:
+            log_info("Skipping installation of missing dependencies")
+    
+    unused_deps = explicit_deps.copy()
+    for dep in explicit_deps:
+        for module in reverse_package_distributions.get(dep, {dep}):
+            if module in found_deps:
+                unused_deps.remove(dep)
+                break
+    
+    if len(unused_deps) == 0:
+        log_info("No unused dependencies")
+    else:
+        log_warning(f"Unused dependencies: {" ".join(unused_deps)}")
+        if choice is None:
+            if input("Do you want to uninstall unused dependencies? [y/N] ").lower() != "y":
+                uninstall_deps = False
+            else:
+                uninstall_deps = True
+        elif choice == True:
+            uninstall_deps = True
+        else:
+            uninstall_deps = False
+
+        if uninstall_deps:
+            uninstall_dependencies(venv_path, unused_deps)
+            log_info("Unused dependencies uninstalled successfully")
+        else:
+            log_info("Skipping uninstallation of unused dependencies")
+
+    log_info("Dependencies tidied successfully")
+
 
 def main():
     settings = Settings.autoload()
@@ -158,6 +254,8 @@ def main():
         "add", help="Add a new dependency to the project")
     remove_parser = subparsers.add_parser(
         "remove", help="Remove a dependency from the project")
+    tidy_parser = subparsers.add_parser(
+        "tidy", help="Install missing dependencies and remove unused dependencies")
 
     init_parser.add_argument(
         "project_path", help="Path to the project directory", type=str, default=".", nargs="?")
@@ -185,6 +283,15 @@ def main():
         "dependencies", help="Name of the dependency to remove", type=str, nargs="+")
     remove_parser.add_argument(
         "-p", "--project-path", help="Path to the project directory", type=str, default=".")
+    
+    tidy_parser.add_argument(
+        "-p", "--project-path", help="Path to the project directory", type=str, default=".")
+    tidy_parser.add_argument(
+        "-y", "--yes", help="Automatically confirm the changes", action="store_true"
+    )
+    tidy_parser.add_argument(
+        "-n", "--no", help="Automatically deny the changes", action="store_true"
+    )
 
     args = parser.parse_args()
 
@@ -198,3 +305,5 @@ def main():
             add_dependency(args.project_path, args.dependencies)
         case "remove":
             remove_dependency(args.project_path, args.dependencies)
+        case "tidy":
+            tidy_dependencies(args.project_path, args.yes, args.no)

@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Optional
 import toml
 import subprocess
@@ -36,3 +37,18 @@ def generate_pyproject(project_name: str, author: str, email: Optional[str], ver
 def load_pyproject(pyproject_path: str) -> dict:
     with open(pyproject_path, "r") as f:
         return toml.load(f)
+    
+def find_dependencies(source_path: str) -> set[str]:
+    imports = sys.stdlib_module_names
+    deps = set()
+    for dirpath, dirnames, filenames in os.walk(source_path):
+        for file in filenames:
+            if file.endswith(".py"):
+                with open(os.path.join(dirpath, file), "r") as f:
+                    for line in f:
+                        if line.startswith("import ") or line.startswith("from "):
+                            mod_name = line.split()[1]
+                            package_name = mod_name.split(".")[0]
+                            deps.add(package_name)
+    deps.difference_update(imports)
+    return deps

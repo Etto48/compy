@@ -1,3 +1,4 @@
+import json
 import subprocess
 
 def create_venv(venv_dir: str, python_executable: str = "python3"):
@@ -42,3 +43,19 @@ def uninstall_dependencies(venv_dir: str, dependencies: list[str]):
         ],
         check=True,
     )
+
+def get_package_distributions(venv_dir: str) -> dict[str, list[str]]:
+    result = subprocess.run(
+        [
+            f"{venv_dir}/bin/python3",
+            "-c",
+            """import importlib.metadata as im;\
+            import json;\
+            print(json.dumps(im.packages_distributions()))""",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    package_distributions = json.loads(result.stdout)
+    return package_distributions
+    
