@@ -22,7 +22,7 @@ class Settings:
     @staticmethod
     def autoload():
         paths = [
-            "~/.config/compy/settings.toml",
+            "~/.config/compy/compy.toml",
             "~/.config/compy.toml",
         ]
         for path in paths:
