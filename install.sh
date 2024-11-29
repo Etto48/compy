@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 UNINSTALL=0
 INSTALL_MODE=git
@@ -34,6 +34,7 @@ done
 INSTALL_DIR=$HOME/.local/share/compy
 
 uninstall() {
+    echo "Uninstalling compy..."
     # Remove the installation directory
     rm -rf $INSTALL_DIR
 
@@ -46,26 +47,59 @@ uninstall() {
 install() {
     mkdir -p $INSTALL_DIR
 
+    # Check if python3 is installed
+    if ! command -v python3 > /dev/null; then
+        echo "Python3 is not installed"
+        exit 1
+    fi
+
+    # Check if venv is installed
+    if ! python3 -m venv --help > /dev/null; then
+        echo "The venv module is not installed"
+        exit 1
+    fi
+
+    # Check if git is installed
+    if [ $INSTALL_MODE == "git" ] && ! command -v git > /dev/null; then
+        echo "Git is not installed"
+        exit 1
+    fi
+
+    echo "Installing compy..."
     # Create a virtual environment
-    python3 -m venv $INSTALL_DIR
+    python3 -m venv $INSTALL_DIR > /dev/null
 
     # Install the package
     case $INSTALL_MODE in
         git)
-            $INSTALL_DIR/bin/pip install git+https://github.com/Etto48/compy
+            $INSTALL_DIR/bin/pip install git+https://github.com/Etto48/compy > /dev/null
             ;;
         local)
-            $INSTALL_DIR/bin/pip install .
+            $INSTALL_DIR/bin/pip install . > /dev/null
             ;;
         editable)
-            $INSTALL_DIR/bin/pip install -e .
+            $INSTALL_DIR/bin/pip install -e . > /dev/null
             ;;
     esac
 
     # Create a symbolic link to the executable
     mkdir -p $HOME/.local/bin
     SCRIPT_PATH=$INSTALL_DIR/bin/compy
-    ln -s $SCRIPT_PATH $HOME/.local/bin/compy
+    ln -fs $SCRIPT_PATH $HOME/.local/bin/compy
+
+    # check if .local/bin is in PATH
+    if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+        echo "~/.local/bin is already in PATH"
+    else
+        if [[ "$SHELL" == "/bin/zsh" ]]; then
+            echo "Add the following line in ~/.zshrc:"
+        elif [[ "$SHELL" == "/bin/bash" ]]; then
+            echo "Add the following line in ~/.bashrc:"
+        else
+            echo "Add the following line to your shell configuration file:"
+        fi
+        echo "export PATH=\$HOME/.local/bin:\$PATH"
+    fi
 
     echo "Installation complete"
 }
